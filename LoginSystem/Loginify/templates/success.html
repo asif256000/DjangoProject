@@ -8,6 +8,9 @@
 <body>
     <h1>Success!</h1>
     <p>You have successfully logged in.</p>
-    <p><a href="{% url 'loginify:login' %}">Go back to login</a></p>
+    <p>
+        <a href="{% url 'loginify:login' %}">Go back to Login</a><br>
+        <a href="{% url 'loginify:signup' %}">Signup for a new account</a>
+    </p>
 </body>
 </html>
