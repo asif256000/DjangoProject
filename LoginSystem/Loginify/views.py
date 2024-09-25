@@ -32,12 +32,12 @@ def signup(request):
 
 def login(request):
     if request.method == "POST":
-        username = request.POST["username"]
+        email = request.POST["email"]
         password = request.POST["password"]
 
-        if UserDetails.objects.filter(username=username, password=password).exists():
+        if UserDetails.objects.filter(email=email, password=password).exists():
             messages.success(request, "Login successful!")
-            return redirect("loginify:hello_world")
+            return render(request, "success.html")
         else:
             messages.error(request, "Invalid credentials!")
             return redirect("loginify:login")
