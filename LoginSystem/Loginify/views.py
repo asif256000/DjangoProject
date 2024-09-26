@@ -1,6 +1,6 @@
 from django.contrib import messages
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import UserDetails
 
@@ -42,3 +42,46 @@ def login(request):
             messages.error(request, "Invalid credentials!")
             return redirect("loginify:login")
     return render(request, "login.html")
+
+
+def get_all_users(request):
+    users = UserDetails.objects.all()
+    user_list = []
+    for user in users:
+        user_list.append(
+            {
+                "username": user.username,
+                "email": user.email,
+                "password": user.password,
+            }
+        )
+    return JsonResponse(user_list, safe=False)
+
+
+def get_user_by_email(request, email):
+    user = get_object_or_404(UserDetails, email=email)
+    return JsonResponse(
+        {
+            "username": user.username,
+            "email": user.email,
+            "password": user.password,
+        }
+    )
+
+
+def update_user(request, email):
+    user = get_object_or_404(UserDetails, email=email)
+    if request.method == "POST":
+        user.username = request.POST.get("username", user.username)
+        user.password = request.POST.get("password", user.password)
+        user.save()
+        messages.success(request, "User updated successfully!")
+        return JsonResponse({"message": "User updated successfully!", "user": user.__dict__})
+    return JsonResponse({"error": "Invalid request method! Use POST to update."}, status=400)
+
+
+def delete_user(request, email):
+    user = get_object_or_404(UserDetails, email=email)
+    user.delete()
+    messages.success(request, "User deleted successfully!")
+    return JsonResponse({"message": "User deleted successfully!"})
