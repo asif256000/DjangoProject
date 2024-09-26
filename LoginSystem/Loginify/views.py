@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -72,11 +74,23 @@ def get_user_by_email(request, email):
 def update_user(request, email):
     user = get_object_or_404(UserDetails, email=email)
     if request.method == "POST":
-        user.username = request.POST.get("username", user.username)
-        user.password = request.POST.get("password", user.password)
-        user.save()
-        messages.success(request, "User updated successfully!")
-        return JsonResponse({"message": "User updated successfully!", "user": user.__dict__})
+        try:
+            data = json.loads(request.body)
+            if "username" in data:
+                user.username = data["username"]
+            if "password" in data:
+                user.password = data["password"]
+            user.save()
+            return JsonResponse(
+                {
+                    "message": "User updated successfully!",
+                    "user": {"username": user.username, "email": user.email, "password": user.password},
+                }
+            )
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data!"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
     return JsonResponse({"error": "Invalid request method! Use POST to update."}, status=400)
 
 
